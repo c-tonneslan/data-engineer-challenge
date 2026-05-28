@@ -1,6 +1,51 @@
 # Propeller Data Engineer Challenge
 
-## Background
+## Solution by Charlie Tonneslan
+
+This is a public completion of [Propeller's data engineer challenge](https://github.com/PropellerAero/data-engineer-challenge), not an in-flight application. The original brief is preserved below; my write-up of the design choices lives in [NOTES.md](NOTES.md).
+
+### Quick start
+
+```sh
+# one-time setup
+python3 -m venv .venv && . .venv/bin/activate
+pip install pyproj requests pytest
+
+# enrich captures with lat/lng (default: local pyproj converter)
+python enrich_data.py
+
+# write the London report
+python generate_report.py
+```
+
+Output ends up in `london_aeropoint_groups.csv`. Both scripts take `--help`.
+
+### How it's laid out
+
+```
+enrich_data.py            thin CLI wrapper
+generate_report.py        thin CLI wrapper
+data_engineer_challenge/
+    converters.py         Converter protocol, pyproj + HTTP implementations
+    db.py                 schema migration + dedup queries
+    enrich.py             enrichment pipeline
+    report.py             SQL + CSV writer
+tests/                    pytest suite (22 tests, runs offline)
+```
+
+The HTTP converter is included for parity with the brief, but the suggested API now sits behind a Cloudflare challenge so I made pyproj the default. Reasoning is in [NOTES.md](NOTES.md).
+
+### Tests
+
+```sh
+pytest
+```
+
+22 tests, no network. The fixture builds a tiny SQLite from scratch covering London + non-London + repeated coords + a group with zero captures.
+
+---
+
+## Background (original brief)
 
 Propeller's AeroPoints are smart ground control points that are used to accurately geolocate aerial drone imagery. They have high accuracy GPS units inside them and upload their location to Propeller's cloud platform.
 
@@ -44,7 +89,7 @@ To complete the challenge you will need to:
 
 You should think of these scripts as needing to be "production ready" and should be written in a way that they could be run as part of a scheduled job.
 
-## What we’ll be looking for
+## What we'll be looking for
 
 - Your ability to talk us through your thinking and the decisions you are making.
 - A well-structured solution that is easy to understand and maintain.
